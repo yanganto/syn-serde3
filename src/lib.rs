@@ -85,7 +85,7 @@ print out a Rust syntax tree.
 
 ## Optional features
 
-- **`json`** — Provides functions for JSON <-> Rust serializing and
+- **`json`** - Provides functions for JSON <-> Rust serializing and
   deserializing.
 
 ## Relationship to Syn
