@@ -1,5 +1,8 @@
 name: Rust Crate Release
 
+permissions:
+   contents: read
+
 concurrency:
   group: rust-crate-release-${{ github.head_ref }}
   cancel-in-progress: true
