@@ -119,7 +119,7 @@ pub enum Expr {
     While(ExprWhile),
     Yield(ExprYield),
 }
-/// An adapter for [`enum@syn::FieldMutability`].
+/// An adapter for `syn::FieldMutability` (removed in syn 3; kept for JSON compatibility).
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[non_exhaustive]
@@ -183,7 +183,7 @@ pub enum ImplItem {
     Macro(ImplItemMacro),
     Verbatim(TokenStream),
 }
-/// An adapter for [`enum@syn::ImplRestriction`].
+/// An adapter for `syn::ImplRestriction` (removed in syn 3; kept for JSON compatibility).
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[non_exhaustive]
@@ -299,7 +299,7 @@ pub enum StaticMutability {
     Mut,
     None,
 }
-/// An adapter for [`enum@syn::TraitBoundModifier`].
+/// An adapter for `syn::TraitBoundModifier` (removed in syn 3; kept for JSON compatibility).
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum TraitBoundModifier {
