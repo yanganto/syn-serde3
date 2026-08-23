@@ -130,7 +130,7 @@ jobs:
         run: nix develop -c cargo rustdoc --all-features
 
   test:
-    needs: [tidy, check-external-types, clippy, codeql, codegen, docs]
+    needs: [cargo-deny, check-external-types, clippy, codeql, codegen, docs]
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -149,7 +149,7 @@ jobs:
       - run: cargo minimal-versions build --workspace --no-private --detach-path-deps=skip-exact --all-features --direct
 
   miri:
-    needs: [tidy, check-external-types, clippy, codeql, codegen, docs]
+    needs: [cargo-deny, check-external-types, clippy, codeql, codegen, docs]
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
@@ -173,7 +173,7 @@ jobs:
           RUSTFLAGS: ${{ env.RUSTFLAGS }} -Z randomize-layout
 
   msrv:
-    needs: [tidy, check-external-types, clippy, codeql, codegen, docs]
+    needs: [cargo-deny, check-external-types, clippy, codeql, codegen, docs]
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
