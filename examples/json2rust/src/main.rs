@@ -5,7 +5,7 @@ use std::{
     io::{self, Write as _},
 };
 
-use syn_serde::json;
+use syn_serde3::json;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<_> = env::args_os().skip(1).collect();

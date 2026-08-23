@@ -3,7 +3,7 @@ name = "rust2json"
 edition = "2021"
 
 [dependencies]
-syn-serde = { path = "../..", features = ["json"] }
+syn-serde3 = { path = "../..", features = ["json"] }
 syn = { version = "2", features = ["full"] }
 
 [lints]

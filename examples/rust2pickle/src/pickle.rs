@@ -7,7 +7,7 @@
 use std::io;
 
 use serde_pickle::{DeOptions, Result, SerOptions};
-use syn_serde::Syn;
+use syn_serde3::Syn;
 
 // Serialize [`Syn`] type into Pickle data.
 /// Serialize the given [`Syn`] type as a pickle byte vector.
@@ -16,7 +16,7 @@ use syn_serde::Syn;
 ///
 /// ```
 /// # fn to_vec(syn_file: &syn::File) -> Vec<u8> {
-/// use syn_serde::Syn;
+/// use syn_serde3::Syn;
 ///
 /// let serializable_file = syn_file.to_adapter();
 /// serde_pickle::to_vec(&serializable_file, true).unwrap()
@@ -39,7 +39,7 @@ where
 /// ```
 /// # use std::io;
 /// # fn from_reader<R: io::Read>(rdr: R) -> serde_pickle::Result<syn::File> {
-/// use syn_serde::Syn;
+/// use syn_serde3::Syn;
 ///
 /// let serializable_file: <syn::File as Syn>::Adapter = serde_pickle::from_reader(rdr)?;
 /// let syn_file = syn::File::from_adapter(&serializable_file);
@@ -62,7 +62,7 @@ where
 ///
 /// ```
 /// # fn from_reader(v: &[u8]) -> serde_pickle::Result<syn::File> {
-/// use syn_serde::Syn;
+/// use syn_serde3::Syn;
 ///
 /// let serializable_file: <syn::File as Syn>::Adapter = serde_pickle::from_slice(v)?;
 /// let syn_file = syn::File::from_adapter(&serializable_file);
