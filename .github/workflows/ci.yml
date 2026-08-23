@@ -140,13 +140,14 @@ jobs:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install cargo-hack and cargo-minimal-versions
         run: |
+          nix develop
+          cargo install cargo-deny --locked
           cargo install cargo-hack --locked
-          cargo install cargo-minimal-versions --locked
-      - run: cargo test --all --all-features --exclude syn-serde-internal-codegen
-      - run: cargo test --all --all-features --release --exclude syn-serde-internal-codegen
-      - run: cargo hack build --workspace --no-private --feature-powerset --no-dev-deps
-      - run: cargo minimal-versions build --workspace --no-private --detach-path-deps=skip-exact --all-features
-      - run: cargo minimal-versions build --workspace --no-private --detach-path-deps=skip-exact --all-features --direct
+      - run: nix develop -c cargo test --all --all-features --exclude syn-serde-internal-codegen
+      - run: nix develop -c cargo test --all --all-features --release --exclude syn-serde-internal-codegen
+      - run: nix develop -c cargo hack build --workspace --no-private --feature-powerset --no-dev-deps
+      - run: nix develop -c cargo minimal-versions build --workspace --no-private --detach-path-deps=skip-exact --all-features
+      - run: nix develop -c cargo minimal-versions build --workspace --no-private --detach-path-deps=skip-exact --all-features --direct
 
   miri:
     needs: [cargo-deny, check-external-types, clippy, codeql, codegen, docs]
@@ -157,6 +158,10 @@ jobs:
       - uses: cachix/install-nix-action@v27
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install cargo-miri
+        run: |
+          nix develop .#nightly
+          cargo install cargo-miri
       - run: printf 'MIRIFLAGS=%s\n' "-Zmiri-strict-provenance -Zmiri-symbolic-alignment-check -Zmiri-disable-isolation -Zmiri-many-seeds=0..16" >>"${GITHUB_ENV}"
         if: github.event_name == 'schedule'
       - run: printf 'MIRIFLAGS=%s\n' "-Zmiri-strict-provenance -Zmiri-symbolic-alignment-check -Zmiri-disable-isolation" >>"${GITHUB_ENV}"
@@ -166,7 +171,7 @@ jobs:
           trap -- 's=$?; printf >&2 "%s\n" "${0##*/}:${LINENO}: \`${BASH_COMMAND}\` exit with ${s}"; exit ${s}' ERR
           (
             set -x
-            cargo miri test --workspace --all-features --exclude syn-serde-internal-codegen
+            nix develop .#nightly -c cargo miri test --workspace --all-features --exclude syn-serde-internal-codegen
           )
         env:
           RUSTDOCFLAGS: ${{ env.RUSTDOCFLAGS }} -Z randomize-layout
@@ -182,7 +187,9 @@ jobs:
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install cargo-hack
-        run: cargo install cargo-hack --locked
+        run: |
+          nix develop
+          cargo install cargo-hack --locked
       - run: |
           IFS=$'\n\t'
           trap -- 's=$?; printf >&2 "%s\n" "${0##*/}:${LINENO}: \`${BASH_COMMAND}\` exit with ${s}"; exit ${s}' ERR
@@ -192,5 +199,5 @@ jobs:
           fi
           (
             set -x
-            cargo hack build --workspace --no-private --no-dev-deps --version-range '..' --all-features "${args[@]}"
+            nix develop -c cargo hack build --workspace --no-private --no-dev-deps --version-range '..' --all-features "${args[@]}"
           )
