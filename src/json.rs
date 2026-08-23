@@ -21,7 +21,7 @@ use super::*;
 /// # where
 /// #     W: io::Write,
 /// # {
-/// use syn_serde::Syn;
+/// use syn_serde3::Syn;
 ///
 /// let adapter = syn_file.to_adapter();
 /// serde_json::to_writer(writer, &adapter)
@@ -44,7 +44,7 @@ where
 /// ```
 /// # use std::io;
 /// # fn to_writer_pretty<W: io::Write>(writer: W, syn_file: &syn::File) -> serde_json::Result<()> {
-/// use syn_serde::Syn;
+/// use syn_serde3::Syn;
 ///
 /// let adapter = syn_file.to_adapter();
 /// serde_json::to_writer_pretty(writer, &adapter)
@@ -65,13 +65,13 @@ where
 ///
 /// ```
 /// # fn to_vec(syn_file: &syn::File) -> Vec<u8> {
-/// use syn_serde::Syn;
+/// use syn_serde3::Syn;
 ///
 /// let adapter = syn_file.to_adapter();
 /// serde_json::to_vec(&adapter).unwrap()
 /// # }
 /// ```
-// All of the data structures in syn-serde are compatible with JSON so unwrap will never fail.
+// All of the data structures in syn-serde3 are compatible with JSON so unwrap will never fail.
 #[allow(clippy::missing_panics_doc)]
 pub fn to_vec<S>(syn: &S) -> Vec<u8>
 where
@@ -87,13 +87,13 @@ where
 ///
 /// ```
 /// # fn to_vec_pretty(syn_file: &syn::File) -> Vec<u8> {
-/// use syn_serde::Syn;
+/// use syn_serde3::Syn;
 ///
 /// let adapter = syn_file.to_adapter();
 /// serde_json::to_vec_pretty(&adapter).unwrap()
 /// # }
 /// ```
-// All of the data structures in syn-serde are compatible with JSON so unwrap will never fail.
+// All of the data structures in syn-serde3 are compatible with JSON so unwrap will never fail.
 #[allow(clippy::missing_panics_doc)]
 pub fn to_vec_pretty<S>(syn: &S) -> Vec<u8>
 where
@@ -109,13 +109,13 @@ where
 ///
 /// ```
 /// # fn to_string(syn_file: &syn::File) -> String {
-/// use syn_serde::Syn;
+/// use syn_serde3::Syn;
 ///
 /// let adapter = syn_file.to_adapter();
 /// serde_json::to_string(&adapter).unwrap()
 /// # }
 /// ```
-// All of the data structures in syn-serde are compatible with JSON so unwrap will never fail.
+// All of the data structures in syn-serde3 are compatible with JSON so unwrap will never fail.
 #[allow(clippy::missing_panics_doc)]
 pub fn to_string<S>(syn: &S) -> String
 where
@@ -131,13 +131,13 @@ where
 ///
 /// ```
 /// # fn to_string_pretty(syn_file: &syn::File) -> String {
-/// use syn_serde::Syn;
+/// use syn_serde3::Syn;
 ///
 /// let adapter = syn_file.to_adapter();
 /// serde_json::to_string_pretty(&adapter).unwrap()
 /// # }
 /// ```
-// All of the data structures in syn-serde are compatible with JSON so unwrap will never fail.
+// All of the data structures in syn-serde3 are compatible with JSON so unwrap will never fail.
 #[allow(clippy::missing_panics_doc)]
 pub fn to_string_pretty<S>(syn: &S) -> String
 where
@@ -156,7 +156,7 @@ where
 /// ```
 /// # use std::io;
 /// # fn from_reader<R: io::Read>(reader: R) -> serde_json::Result<syn::File> {
-/// use syn_serde::Syn;
+/// use syn_serde3::Syn;
 ///
 /// let adapter: <syn::File as Syn>::Adapter = serde_json::from_reader(reader)?;
 /// let syn_file = syn::File::from_adapter(&adapter);
@@ -178,7 +178,7 @@ where
 ///
 /// ```
 /// # fn from_reader(v: &[u8]) -> serde_json::Result<syn::File> {
-/// use syn_serde::Syn;
+/// use syn_serde3::Syn;
 ///
 /// let adapter: <syn::File as Syn>::Adapter = serde_json::from_slice(v)?;
 /// let syn_file = syn::File::from_adapter(&adapter);
@@ -199,7 +199,7 @@ where
 ///
 /// ```
 /// # fn from_str(s: &str) -> serde_json::Result<syn::File> {
-/// use syn_serde::Syn;
+/// use syn_serde3::Syn;
 ///
 /// let adapter: <syn::File as Syn>::Adapter = serde_json::from_str(s)?;
 /// let syn_file = syn::File::from_adapter(&adapter);

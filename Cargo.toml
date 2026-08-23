@@ -1,9 +1,9 @@
 [package]
-name = "syn-serde"
-version = "0.3.2" #publish:version
+name = "syn-serde3"
+version = "0.0.1"
 edition = "2021"
 # NB: Sync with msrv badge in README.md
-rust-version = "1.71" # For syn
+rust-version = "1.71.1" # For syn
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/taiki-e/syn-serde"
 keywords = ["serde", "serialization", "syn"]
@@ -22,6 +22,7 @@ targets = ["x86_64-unknown-linux-gnu"]
 allowed_external_types = [
     "serde_json::*",
     "serde_core::*",
+    "syn::*",
 ]
 
 [lib]
@@ -32,17 +33,17 @@ json = ["serde_json"]
 
 # Note: proc-macro2, serde, serde_json, and syn are public dependencies.
 [dependencies]
-proc-macro2 = { version = "1.0.60", default-features = false }
+proc-macro2 = { version = "1.0.91", default-features = false }
 serde = "1.0.113"
 serde_derive = "1.0.113"
-syn = { version = "2", default-features = false, features = ["full"] }
+syn = { version = "3", default-features = false, features = ["full"] }
 
 serde_json = { version = "1", optional = true }
 
 [dev-dependencies]
 quote = "1"
 serde_json = "1"
-syn = { version = "2", default-features = false, features = ["parsing", "printing", "full", "extra-traits"] }
+syn = { version = "3", default-features = false, features = ["parsing", "printing", "full", "extra-traits"] }
 
 [lints]
 workspace = true

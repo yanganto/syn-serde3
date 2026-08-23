@@ -6,7 +6,7 @@ use syn_codegen::{Data, Definitions, Node, Type};
 use test_helper::{bin_name, codegen::file, function_name};
 
 use crate::{
-    convert::{EMPTY_STRUCTS, IGNORED_TYPES},
+    convert::{COMPAT_TYPES, EMPTY_STRUCTS, IGNORED_TYPES},
     traverse, workspace_root,
 };
 
@@ -77,7 +77,11 @@ fn node(impls: &mut TokenStream, node: &Node, defs: &Definitions) {
         };
 
         let ident = format_ident!("{}", node.ident);
-        let doc = format!(" An adapter for [`enum@syn::{}`].", node.ident);
+        let doc = if COMPAT_TYPES.contains(&&*node.ident) {
+            format!(" An adapter for `syn::{}` (removed in syn 3; kept for JSON compatibility).", node.ident)
+        } else {
+            format!(" An adapter for [`enum@syn::{}`].", node.ident)
+        };
         impls.extend(quote! {
             #[doc = #doc]
             #[derive(Serialize, Deserialize)]

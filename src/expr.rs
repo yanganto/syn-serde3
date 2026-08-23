@@ -90,10 +90,18 @@ mod convert {
                     assert!(other.comma.is_some(), "expected `,`");
                 }
 
+                let (pat, guard) = match &other.pat {
+                    syn::Pat::Guard(g) => (
+                        (*g.pat).ref_into(),
+                        Some(Box::new((*g.guard).ref_into())),
+                    ),
+                    _ => (other.pat.ref_into(), None),
+                };
+
                 Arm {
                     attrs: other.attrs.map_into(),
-                    pat: other.pat.ref_into(),
-                    guard: other.guard.ref_map(|(_, x)| x.map_into()),
+                    pat,
+                    guard,
                     body,
                 }
             })
@@ -129,20 +137,37 @@ mod convert {
                 assert!(other.comma.is_some(), "expected `,`");
             }
 
+            let (pat, guard) = match &other.pat {
+                syn::Pat::Guard(g) => (
+                    (*g.pat).ref_into(),
+                    Some(Box::new((*g.guard).ref_into())),
+                ),
+                _ => (other.pat.ref_into(), None),
+            };
+
             Self {
                 attrs: other.attrs.map_into(),
-                pat: other.pat.ref_into(),
-                guard: other.guard.ref_map(|(_, x)| x.map_into()),
+                pat,
+                guard,
                 body,
             }
         }
     }
     impl From<&Arm> for syn::Arm {
         fn from(other: &Arm) -> Self {
+            let pat: syn::Pat = if let Some(guard) = &other.guard {
+                syn::Pat::Guard(syn::PatGuard {
+                    attrs: alloc::vec![],
+                    pat: Box::new(other.pat.ref_into()),
+                    if_token: default(),
+                    guard: guard.map_into(),
+                })
+            } else {
+                other.pat.ref_into()
+            };
             Self {
                 attrs: other.attrs.map_into(),
-                pat: other.pat.ref_into(),
-                guard: other.guard.ref_map(|x| (default(), x.map_into())),
+                pat,
                 fat_arrow_token: default(),
                 body: other.body.map_into(),
                 comma: default_or_none(requires_terminator(&other.body)),

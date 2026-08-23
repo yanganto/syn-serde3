@@ -18,7 +18,6 @@ const SKIPPED: &[&str] = &[
     "Arm",
     // generics.rs
     "Generics",
-    "PredicateType", // TODO
     // item.rs
     "ItemMod", // TODO
     "ItemStruct",

@@ -4,8 +4,8 @@
 
 use syn::*;
 
-fn print_actual(actual: &impl syn_serde::Syn) {
-    println!("actual:\n```\n{}\n", syn_serde::json::to_string_pretty(actual));
+fn print_actual(actual: &impl syn_serde3::Syn) {
+    println!("actual:\n```\n{}\n", syn_serde3::json::to_string_pretty(actual));
 }
 
 #[test]
@@ -23,7 +23,7 @@ fn test_unit() {
 
     let actual = syn::parse_str(raw).unwrap();
     print_actual(&actual);
-    let ser: syn_serde::Item = serde_json::from_str(json).unwrap();
+    let ser: syn_serde3::Item = serde_json::from_str(json).unwrap();
     let ser = Item::from(&ser);
     assert_eq!(ser, actual);
 }
@@ -129,7 +129,7 @@ fn test_struct() {
 
     let actual = syn::parse_str(raw).unwrap();
     print_actual(&actual);
-    let json: syn_serde::Item = serde_json::from_str(json).unwrap();
+    let json: syn_serde3::Item = serde_json::from_str(json).unwrap();
     let json = Item::from(&json);
     assert_eq!(json, actual);
 }
@@ -186,7 +186,7 @@ fn test_union() {
 
     let actual = syn::parse_str(raw).unwrap();
     print_actual(&actual);
-    let json: syn_serde::Item = serde_json::from_str(json).unwrap();
+    let json: syn_serde3::Item = serde_json::from_str(json).unwrap();
     let json = Item::from(&json);
     assert_eq!(json, actual);
 }
@@ -337,7 +337,7 @@ fn test_enum() {
 
     let actual = syn::parse_str(raw).unwrap();
     print_actual(&actual);
-    let json: syn_serde::Item = serde_json::from_str(json).unwrap();
+    let json: syn_serde3::Item = serde_json::from_str(json).unwrap();
     let json = Item::from(&json);
     assert_eq!(json, actual);
 }
@@ -401,7 +401,7 @@ fn test_pub_restricted() {
 
     let actual = syn::parse_str(raw).unwrap();
     print_actual(&actual);
-    let json: syn_serde::Item = serde_json::from_str(json).unwrap();
+    let json: syn_serde3::Item = serde_json::from_str(json).unwrap();
     let json = Item::from(&json);
     assert_eq!(json, actual);
 }
@@ -434,7 +434,7 @@ fn test_pub_restricted_crate() {
 
     let actual = syn::parse_str(raw).unwrap();
     print_actual(&actual);
-    let json: syn_serde::Item = serde_json::from_str(json).unwrap();
+    let json: syn_serde3::Item = serde_json::from_str(json).unwrap();
     let json = Item::from(&json);
     assert_eq!(json, actual);
 }
@@ -467,7 +467,7 @@ fn test_pub_restricted_super() {
 
     let actual = syn::parse_str(raw).unwrap();
     print_actual(&actual);
-    let json: syn_serde::Item = serde_json::from_str(json).unwrap();
+    let json: syn_serde3::Item = serde_json::from_str(json).unwrap();
     let json = Item::from(&json);
     assert_eq!(json, actual);
 }
@@ -501,7 +501,7 @@ fn test_pub_restricted_in_super() {
 
     let actual = syn::parse_str(raw).unwrap();
     print_actual(&actual);
-    let json: syn_serde::Item = serde_json::from_str(json).unwrap();
+    let json: syn_serde3::Item = serde_json::from_str(json).unwrap();
     let json = Item::from(&json);
     assert_eq!(json, actual);
 }
@@ -539,7 +539,7 @@ fn test_ambiguous_crate() {
 
     let actual = syn::parse_str(raw).unwrap();
     print_actual(&actual);
-    let json: syn_serde::Item = serde_json::from_str(json).unwrap();
+    let json: syn_serde3::Item = serde_json::from_str(json).unwrap();
     let json = Item::from(&json);
     assert_eq!(json, actual);
 }
@@ -575,7 +575,7 @@ fn test_static_mut() {
 
     let actual = syn::parse_str(raw).unwrap();
     print_actual(&actual);
-    let json: syn_serde::Item = serde_json::from_str(json).unwrap();
+    let json: syn_serde3::Item = serde_json::from_str(json).unwrap();
     let json = Item::from(&json);
     assert_eq!(json, actual);
 }

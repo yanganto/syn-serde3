@@ -1,11 +1,13 @@
 [package]
 name = "json2rust"
+version = "0.0.0"
 edition = "2021"
+publish = false
 
 [dependencies]
-syn-serde = { path = "../..", features = ["json"] }
-syn = { version = "2", features = ["full"] }
-prettyplease = "0.2"
+syn-serde3 = { path = "../..", features = ["json"] }
+syn = { version = "3", features = ["full"] }
+prettyplease = "0.3"
 quote = "1"
 
 [lints]

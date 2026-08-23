@@ -1,10 +1,12 @@
 [package]
 name = "rust2pickle"
+version = "0.0.0"
 edition = "2021"
+publish = false
 
 [dependencies]
-syn-serde = { path = "../.." }
-syn = { version = "2", features = ["full"] }
+syn-serde3 = { path = "../.." }
+syn = { version = "3", features = ["full"] }
 serde-pickle = "1"
 
 [lints]

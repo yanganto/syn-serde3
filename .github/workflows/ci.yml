@@ -5,26 +5,189 @@ permissions: {}
 on:
   pull_request:
   push:
-    branches:
-      - main
-      - dev
-  schedule:
-    - cron: '0 2 * * *'
+    branches: [syn-serde3]
   workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
+env:
+  CARGO_INCREMENTAL: 0
+  CARGO_NET_GIT_FETCH_WITH_CLI: true
+  CARGO_NET_RETRY: 10
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+  RUSTFLAGS: -D warnings
+  RUSTDOCFLAGS: -D warnings
+  RUSTUP_MAX_RETRIES: 10
+  ATOMIC_MAYBE_UNINIT_DENY_WARNINGS: 1
+  CARGO_HACK_DENY_WARNINGS: 1
+  CARGO_LLVM_COV_DENY_WARNINGS: 1
+  CARGO_MINIMAL_VERSIONS_DENY_WARNINGS: 1
+  CARGO_NO_DEV_DEPS_DENY_WARNINGS: 1
+  CONST_FN_DENY_WARNINGS: 1
+  PORTABLE_ATOMIC_DENY_WARNINGS: 1
+  SEMIHOSTING_DENY_WARNINGS: 1
+
+defaults:
+  run:
+    shell: nix develop -c bash --noprofile --norc -CeEuo pipefail {0}
+
 jobs:
-  tidy:
-    uses: taiki-e/github-actions/.github/workflows/tidy.yml@e6a1170cbd07eb898017958967912976fce18f2d # 2026.7.3
+  cargo-deny:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v27
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install cargo-deny and cargo-hack
+        run: |
+          nix develop
+          cargo install cargo-deny --locked
+          cargo install cargo-hack --locked
+      - name: Run cargo-deny
+        run: nix develop -c cargo hack --workspace-behavior=cargo --no-private --no-dev-deps deny --workspace --all-features check
+      - run: git add -N . && git -c color.ui=always diff --exit-code
+
+  check-external-types:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v27
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install cargo-check-external-types
+        run: nix develop .#nightly -c cargo install cargo-check-external-types --version '=0.5.0' --locked
+      - name: Run cargo check-external-types
+        run: nix develop .#nightly -c cargo check-external-types --all-features --target=x86_64-unknown-linux-gnu
+
+  clippy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v27
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run cargo clippy
+        run: |
+          nix develop -c cargo clippy --all-features
+
+  codeql:
+    name: codeql (${{ matrix.language }})
+    if: github.event_name != 'schedule'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: actions
+            build-mode: none
+          - language: rust
+            build-mode: none
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
     permissions:
-      security-events: write # for github/codeql-action/*
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
+        with:
+          category: /language:${{ matrix.language }}
+
+  codegen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v27
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - run: bash "${SCRIPT}"
+        env:
+          SCRIPT: tools/gen.sh
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: git add -N . && git -c color.ui=always diff --exit-code
+
+  docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v27
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run cargo rustdoc
+        run: nix develop -c cargo rustdoc --all-features
+
   test:
-    needs: tidy
-    uses: taiki-e/github-actions/.github/workflows/rust-test.yml@e6a1170cbd07eb898017958967912976fce18f2d # 2026.7.3
-    with:
-      test-args: --exclude syn-serde-internal-codegen
-      no-std: false
-      optional-deps: ''
+    needs: [cargo-deny, check-external-types, clippy, codeql, codegen, docs]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v27
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install cargo-hack and cargo-minimal-versions
+        run: |
+          nix develop
+          cargo install cargo-hack --locked
+          cargo install cargo-minimal-versions --locked
+      - run: nix develop -c cargo test --all --all-features --exclude syn-serde-internal-codegen
+      - run: nix develop -c cargo test --all --all-features --release --exclude syn-serde-internal-codegen
+      - run: nix develop -c cargo hack build --workspace --no-private --feature-powerset --no-dev-deps
+      - run: nix develop -c cargo minimal-versions build --workspace --no-private --detach-path-deps=skip-exact --all-features
+      - run: nix develop -c cargo minimal-versions build --workspace --no-private --detach-path-deps=skip-exact --all-features --direct
+
+  miri:
+    needs: [cargo-deny, check-external-types, clippy, codeql, codegen, docs]
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v27
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - run: printf 'MIRIFLAGS=%s\n' "-Zmiri-strict-provenance -Zmiri-symbolic-alignment-check -Zmiri-disable-isolation -Zmiri-many-seeds=0..16" >>"${GITHUB_ENV}"
+        if: github.event_name == 'schedule'
+      - run: printf 'MIRIFLAGS=%s\n' "-Zmiri-strict-provenance -Zmiri-symbolic-alignment-check -Zmiri-disable-isolation" >>"${GITHUB_ENV}"
+        if: github.event_name != 'schedule'
+      - run: |
+          IFS=$'\n\t'
+          trap -- 's=$?; printf >&2 "%s\n" "${0##*/}:${LINENO}: \`${BASH_COMMAND}\` exit with ${s}"; exit ${s}' ERR
+          (
+            set -x
+            nix develop .#nightly -c cargo miri test --workspace --all-features --exclude syn-serde-internal-codegen
+          )
+        env:
+          RUSTDOCFLAGS: ${{ env.RUSTDOCFLAGS }} -Z randomize-layout
+          RUSTFLAGS: ${{ env.RUSTFLAGS }} -Z randomize-layout
+
+  msrv:
+    needs: [cargo-deny, check-external-types, clippy, codeql, codegen, docs]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v27
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install cargo-hack
+        run: nix develop -c cargo install cargo-hack --locked
+      - run: |
+          IFS=$'\n\t'
+          trap -- 's=$?; printf >&2 "%s\n" "${0##*/}:${LINENO}: \`${BASH_COMMAND}\` exit with ${s}"; exit ${s}' ERR
+          (
+            set -x
+            nix develop .#msrv -c cargo hack build --workspace --no-private --no-dev-deps --all-features --target x86_64-unknown-linux-gnu
+          )

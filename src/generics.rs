@@ -45,18 +45,6 @@ impl Default for TraitBoundModifier {
     }
 }
 
-ast_struct! {
-    /// An adapter for [`struct@syn::PredicateType`].
-    pub struct PredicateType {
-        #[serde(default, skip_serializing_if = "Option::is_none")]
-        pub(crate) lifetimes: Option<BoundLifetimes>,
-        pub(crate) bounded_ty: Type,
-        // TODO: should allow default?
-        // #[serde(default, skip_serializing_if = "Punctuated::is_empty")]
-        pub(crate) bounds: Punctuated<TypeParamBound>,
-    }
-}
-
 mod convert {
     use super::*;
 

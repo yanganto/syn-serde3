@@ -13,19 +13,19 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-syn-serde = "0.3"
+syn-serde3 = "0.3"
 ```
 
 ## Examples
 
 ```toml
 [dependencies]
-syn-serde = { version = "0.3", features = ["json"] }
+syn-serde3 = { version = "0.3", features = ["json"] }
 syn = { version = "2", features = ["full"] }
 ```
 
 ```
-use syn_serde::json;
+use syn_serde3::json;
 
 let syn_file: syn::File = syn::parse_quote! {
     fn main() {
@@ -75,12 +75,12 @@ This prints the following JSON:
 
 ### Rust source file -> JSON representation of the syntax tree
 
-The [`rust2json`] example parse a Rust source file into a `syn_serde::File`
+The [`rust2json`] example parse a Rust source file into a `syn_serde3::File`
 and print out a JSON representation of the syntax tree.
 
 ### JSON file -> Rust syntax tree
 
-The [`json2rust`] example parse a JSON file into a `syn_serde::File` and
+The [`json2rust`] example parse a JSON file into a `syn_serde3::File` and
 print out a Rust syntax tree.
 
 ## Optional features
@@ -90,17 +90,17 @@ print out a Rust syntax tree.
 
 ## Relationship to Syn
 
-syn-serde is a fork of [Syn], and syn-serde provides a set of data structures
-similar but not identical to [Syn]. All data structures provided by syn-serde
+syn-serde3 is a fork of [Syn], and syn-serde3 provides a set of data structures
+similar but not identical to [Syn]. All data structures provided by syn-serde3
 can be converted to the data structures of [Syn] and [proc-macro2].
 
-The data structures of syn-serde 0.3 is compatible with the data structures of
+The data structures of syn-serde3 0.3 is compatible with the data structures of
 [Syn] 2.x.
 
 [Syn]: https://github.com/dtolnay/syn
 [proc-macro2]: https://github.com/alexcrichton/proc-macro2
-[`rust2json`]: https://github.com/taiki-e/syn-serde/tree/HEAD/examples/rust2json
-[`json2rust`]: https://github.com/taiki-e/syn-serde/tree/HEAD/examples/json2rust
+[`rust2json`]: https://github.com/taiki-e/syn-serde3/tree/HEAD/examples/rust2json
+[`json2rust`]: https://github.com/taiki-e/syn-serde3/tree/HEAD/examples/json2rust
 
 <!-- tidy:sync-markdown-to-rustdoc:end -->
 */
@@ -188,9 +188,9 @@ mod generics;
 #[doc(hidden)]
 pub use self::generics::{
     BoundLifetimes, ConstParam, GenericParam, Generics, LifetimeParam, PredicateLifetime,
-    PredicateType, TraitBound, TraitBoundModifier, TypeParam, TypeParamBound, WhereClause,
-    WherePredicate,
+    TraitBound, TraitBoundModifier, TypeParam, TypeParamBound, WhereClause, WherePredicate,
 };
+pub use self::ast_struct::PredicateType;
 
 mod item;
 #[doc(hidden)]
@@ -257,7 +257,7 @@ pub use self::stmt::{Block, Local, LocalInit, Stmt, StmtMacro};
 mod ty;
 #[doc(hidden)]
 pub use self::ty::{
-    Abi, BareFnArg, BareVariadic, ReturnType, Type, TypeArray, TypeBareFn, TypeGroup,
+    Abi, FnPtrVariadic, NamedArg, ReturnType, Type, TypeArray, TypeFnPtr, TypeGroup,
     TypeImplTrait, TypeMacro, TypeParen, TypePath, TypePtr, TypeReference, TypeSlice,
     TypeTraitObject, TypeTuple,
 };
@@ -270,6 +270,9 @@ pub use self::token_stream::{
 
 #[cfg(feature = "json")]
 pub mod json;
+
+#[path = "gen/convert_manual.rs"]
+mod convert_manual;
 
 mod sealed {
     #[allow(unknown_lints, unnameable_types)] // Not public API. unnameable_types is available on Rust 1.79+
@@ -293,7 +296,7 @@ pub trait Syn: Sized + sealed::Sealed {
     /// ```
     /// # #[cfg(feature = "json")]
     /// # fn dox() {
-    /// use syn_serde::Syn;
+    /// use syn_serde3::Syn;
     ///
     /// let syn_file: syn::File = syn::parse_quote! {
     ///     fn main() {
@@ -315,7 +318,7 @@ pub trait Syn: Sized + sealed::Sealed {
     /// ```
     /// # #[cfg(feature = "json")]
     /// # fn dox() -> Result<(), Box<dyn std::error::Error>> {
-    /// use syn_serde::Syn;
+    /// use syn_serde3::Syn;
     ///
     /// // `struct Unit;`
     /// let json = r#"{
