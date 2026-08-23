@@ -32,7 +32,9 @@
 
           nightly = pkgs.mkShell {
             nativeBuildInputs = [
-              pkgs.rust-bin.nightly."2026-03-20".default  # use the same version as cargo-check-external-types
+              (pkgs.rust-bin.nightly."2026-03-20".default.override {
+                extensions = [ "miri" "rust-src" ];
+              })  # use the same version as cargo-check-external-types
             ];
           };
 
