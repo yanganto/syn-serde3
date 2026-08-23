@@ -32,7 +32,7 @@
 
           nightly = pkgs.mkShell {
             nativeBuildInputs = [
-              pkgs.rust-bin.nightly.latest.default
+              pkgs.rust-bin.nightly."2026-03-20".default  # use the same version as cargo-check-external-types
             ];
           };
 
