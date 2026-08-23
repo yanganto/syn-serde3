@@ -154,6 +154,7 @@ mod convert {
                 sig: other.sig.ref_into(),
                 default: other.default.map_into(),
                 semi_token: default_or_none(other.default.is_none()),
+                modifiers: default(),
             }
         }
     }
@@ -162,13 +163,53 @@ mod convert {
     syn_trait_impl!(syn::Receiver);
     impl From<&syn::Receiver> for Receiver {
         fn from(node: &syn::Receiver) -> Self {
-            Self {
-                attrs: node.attrs.map_into(),
-                reference: node.reference.is_some(),
-                lifetime: node.reference.as_ref().and_then(|(_0, _1)| _1.map_into()),
-                mutability: node.mutability.is_some(),
-                colon_token: node.colon_token.is_some(),
-                ty: node.ty.map_into(),
+            match &node.kind {
+                syn::ReceiverKind::Reference(_, lifetime, mut_token) => Self {
+                    attrs: node.attrs.map_into(),
+                    reference: true,
+                    lifetime: lifetime.map_into(),
+                    mutability: mut_token.is_some(),
+                    colon_token: false,
+                    ty: Box::new(Type::Reference(TypeReference {
+                        lifetime: lifetime.map_into(),
+                        mutability: mut_token.is_some(),
+                        elem: Box::new(Type::Path(TypePath {
+                            qself: None,
+                            path: Path {
+                                leading_colon: false,
+                                segments: alloc::vec![PathSegment {
+                                    ident: proc_macro2::Ident::new("Self", proc_macro2::Span::call_site()).ref_into(),
+                                    arguments: PathArguments::None,
+                                }],
+                            },
+                        })),
+                    })),
+                },
+                syn::ReceiverKind::Typed(_, ty) => Self {
+                    attrs: node.attrs.map_into(),
+                    reference: false,
+                    lifetime: None,
+                    mutability: node.mutability.is_some(),
+                    colon_token: true,
+                    ty: ty.map_into(),
+                },
+                _ => Self {
+                    attrs: node.attrs.map_into(),
+                    reference: false,
+                    lifetime: None,
+                    mutability: node.mutability.is_some(),
+                    colon_token: false,
+                    ty: Box::new(Type::Path(TypePath {
+                        qself: None,
+                        path: Path {
+                            leading_colon: false,
+                            segments: alloc::vec![PathSegment {
+                                ident: proc_macro2::Ident::new("Self", proc_macro2::Span::call_site()).ref_into(),
+                                arguments: PathArguments::None,
+                            }],
+                        },
+                    })),
+                },
             }
         }
     }
@@ -176,15 +217,19 @@ mod convert {
         fn from(node: &Receiver) -> Self {
             Self {
                 attrs: node.attrs.map_into(),
-                reference: if node.reference {
-                    Some((default(), node.lifetime.map_into()))
-                } else {
-                    None
-                },
-                mutability: default_or_none(node.mutability),
+                mutability: if node.reference { None } else { default_or_none(node.mutability) },
                 self_token: default(),
-                colon_token: default_or_none(node.colon_token),
-                ty: node.ty.map_into(),
+                kind: if node.reference {
+                    syn::ReceiverKind::Reference(
+                        default(),
+                        node.lifetime.map_into(),
+                        default_or_none(node.mutability),
+                    )
+                } else if node.colon_token {
+                    syn::ReceiverKind::Typed(default(), node.ty.map_into())
+                } else {
+                    syn::ReceiverKind::Value
+                },
             }
         }
     }

@@ -829,7 +829,7 @@ pub struct MetaNameValue {
 /// An adapter for [`struct@syn::ParenthesizedGenericArguments`].
 #[derive(Serialize, Deserialize)]
 pub struct ParenthesizedGenericArguments {
-    pub(crate) inputs: Punctuated<Type>,
+    pub(crate) inputs: Punctuated<BareFnArg>,
     #[serde(default)]
     pub(crate) output: ReturnType,
 }
