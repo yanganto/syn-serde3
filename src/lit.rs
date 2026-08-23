@@ -60,7 +60,7 @@ ast_struct! {
 }
 
 ast_enum! {
-    /// An adapter for [`enum@syn::StrStyle`].
+    /// Adapter enum for string literal style (removed from syn 3; kept for JSON compatibility).
     pub enum StrStyle {
         Cooked,
         Raw(usize),

@@ -40,7 +40,7 @@ pub struct Attribute {
     pub(crate) style: AttrStyle,
     pub(crate) meta: Meta,
 }
-/// An adapter for [`struct@syn::BareFnArg`].
+/// An adapter for [`struct@syn::NamedArg`] (formerly `syn::BareFnArg`).
 #[derive(Serialize, Deserialize)]
 pub struct BareFnArg {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -49,7 +49,7 @@ pub struct BareFnArg {
     pub(crate) name: Option<Ident>,
     pub(crate) ty: Type,
 }
-/// An adapter for [`struct@syn::BareVariadic`].
+/// An adapter for [`struct@syn::FnPtrVariadic`] (formerly `syn::BareVariadic`).
 #[derive(Serialize, Deserialize)]
 pub struct BareVariadic {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -1036,7 +1036,7 @@ pub struct TypeArray {
     pub(crate) elem: Box<Type>,
     pub(crate) len: Expr,
 }
-/// An adapter for [`struct@syn::TypeBareFn`].
+/// An adapter for [`struct@syn::TypeFnPtr`] (formerly `syn::TypeBareFn`).
 #[derive(Serialize, Deserialize)]
 pub struct TypeBareFn {
     #[serde(default, skip_serializing_if = "Option::is_none")]
