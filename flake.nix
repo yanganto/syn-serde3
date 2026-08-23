@@ -30,6 +30,12 @@
             ];
           };
 
+          nightly = pkgs.mkShell {
+            nativeBuildInputs = [
+              pkgs.rust-bin.nightly.latest.default
+            ];
+          };
+
           msrv = pkgs.mkShell {
             nativeBuildInputs = [
               pkgs.rust-bin.stable.${msrv}.default
