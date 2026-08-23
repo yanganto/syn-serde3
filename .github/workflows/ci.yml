@@ -184,7 +184,7 @@ jobs:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install cargo-hack
         run: |
-          nix develop
+          nix develop .#msrv
           cargo install cargo-hack --locked
       - run: |
           IFS=$'\n\t'
@@ -195,5 +195,5 @@ jobs:
           fi
           (
             set -x
-            nix develop -c cargo hack build --workspace --no-private --no-dev-deps --version-range '..' --all-features "${args[@]}"
+            nix develop .#msrv -c cargo hack build --workspace --no-private --no-dev-deps --version-range '..' --all-features "${args[@]}"
           )
