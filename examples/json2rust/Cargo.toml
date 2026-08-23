@@ -5,7 +5,7 @@ edition = "2021"
 [dependencies]
 syn-serde3 = { path = "../..", features = ["json"] }
 syn = { version = "3", features = ["full"] }
-prettyplease = "0.2"
+prettyplease = "0.3"
 quote = "1"
 
 [lints]
