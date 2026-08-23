@@ -141,8 +141,8 @@ jobs:
       - name: Install cargo-hack and cargo-minimal-versions
         run: |
           nix develop
-          cargo install cargo-deny --locked
           cargo install cargo-hack --locked
+          cargo install cargo-minimal-versions --locked
       - run: nix develop -c cargo test --all --all-features --exclude syn-serde-internal-codegen
       - run: nix develop -c cargo test --all --all-features --release --exclude syn-serde-internal-codegen
       - run: nix develop -c cargo hack build --workspace --no-private --feature-powerset --no-dev-deps
@@ -158,10 +158,6 @@ jobs:
       - uses: cachix/install-nix-action@v27
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Install cargo-miri
-        run: |
-          nix develop .#nightly
-          cargo install cargo-miri
       - run: printf 'MIRIFLAGS=%s\n' "-Zmiri-strict-provenance -Zmiri-symbolic-alignment-check -Zmiri-disable-isolation -Zmiri-many-seeds=0..16" >>"${GITHUB_ENV}"
         if: github.event_name == 'schedule'
       - run: printf 'MIRIFLAGS=%s\n' "-Zmiri-strict-provenance -Zmiri-symbolic-alignment-check -Zmiri-disable-isolation" >>"${GITHUB_ENV}"
