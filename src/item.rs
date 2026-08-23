@@ -171,9 +171,11 @@ mod convert {
                     mutability: mut_token.is_some(),
                     colon_token: false,
                     ty: Box::new(Type::Reference(TypeReference {
+                        attrs: Vec::new(),
                         lifetime: lifetime.map_into(),
                         mutability: mut_token.is_some(),
                         elem: Box::new(Type::Path(TypePath {
+                            attrs: Vec::new(),
                             qself: None,
                             path: Path {
                                 leading_colon: false,
@@ -200,6 +202,7 @@ mod convert {
                     mutability: node.mutability.is_some(),
                     colon_token: false,
                     ty: Box::new(Type::Path(TypePath {
+                        attrs: Vec::new(),
                         qself: None,
                         path: Path {
                             leading_colon: false,

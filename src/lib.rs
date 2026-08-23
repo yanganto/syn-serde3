@@ -188,9 +188,9 @@ mod generics;
 #[doc(hidden)]
 pub use self::generics::{
     BoundLifetimes, ConstParam, GenericParam, Generics, LifetimeParam, PredicateLifetime,
-    PredicateType, TraitBound, TraitBoundModifier, TypeParam, TypeParamBound, WhereClause,
-    WherePredicate,
+    TraitBound, TraitBoundModifier, TypeParam, TypeParamBound, WhereClause, WherePredicate,
 };
+pub use self::ast_struct::PredicateType;
 
 mod item;
 #[doc(hidden)]
@@ -257,7 +257,7 @@ pub use self::stmt::{Block, Local, LocalInit, Stmt, StmtMacro};
 mod ty;
 #[doc(hidden)]
 pub use self::ty::{
-    Abi, BareFnArg, BareVariadic, ReturnType, Type, TypeArray, TypeBareFn, TypeGroup,
+    Abi, FnPtrVariadic, NamedArg, ReturnType, Type, TypeArray, TypeFnPtr, TypeGroup,
     TypeImplTrait, TypeMacro, TypeParen, TypePath, TypePtr, TypeReference, TypeSlice,
     TypeTraitObject, TypeTuple,
 };
@@ -270,6 +270,9 @@ pub use self::token_stream::{
 
 #[cfg(feature = "json")]
 pub mod json;
+
+#[path = "gen/convert_manual.rs"]
+mod convert_manual;
 
 mod sealed {
     #[allow(unknown_lints, unnameable_types)] // Not public API. unnameable_types is available on Rust 1.79+

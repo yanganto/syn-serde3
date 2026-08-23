@@ -10,8 +10,49 @@ use crate::{traverse, workspace_root};
 const CONVERT_SRC: &str = "src/gen/convert.rs";
 
 // optimize
-pub(crate) const IGNORED_TYPES: &[&str] =
-    &["Arm", "ExprMatch", "Generics", "ItemStruct", "Receiver", "ReturnType", "TraitItemFn"];
+// Types skipped in convert impl generation only (their enum/struct is still auto-generated).
+// These are types that exist in syn 2 but were removed from syn 3; we keep adapters for JSON compat.
+pub(crate) const COMPAT_TYPES: &[&str] = &["FieldMutability", "ImplRestriction", "TraitBoundModifier"];
+
+// Types with manually written convert impls (in non-generated source files or convert_manual.rs).
+// Struct types only — enum types must NOT be listed here as that would remove them from ast_enum.rs.
+pub(crate) const IGNORED_TYPES: &[&str] = &[
+    "Arm",
+    "ConstParam",
+    "ExprAsync",
+    "ExprClosure",
+    "ExprConst",
+    "ExprMatch",
+    "ExprTryBlock",
+    "Field",
+    "File",
+    "FnPtrVariadic",
+    "ForeignItemFn",
+    "ForeignItemStatic",
+    "ForeignItemType",
+    "Generics",
+    "ImplItemConst",
+    "ImplItemFn",
+    "ImplItemType",
+    "ItemConst",
+    "ItemFn",
+    "ItemImpl",
+    "ItemStruct",
+    "ItemTrait",
+    "ItemType",
+    "Local",
+    "NamedArg",
+    "Receiver",
+    "ReturnType",
+    "Signature",
+    "TraitBound",
+    "TraitItemConst",
+    "TraitItemFn",
+    "TraitItemType",
+    "TypeFnPtr",
+    "TypeParam",
+    "TypePtr",
+];
 
 pub(crate) const EMPTY_STRUCTS: &[&str] =
     &["TypeInfer", "TypeNever", "UseGlob", "VisCrate", "VisPublic"];
@@ -118,7 +159,10 @@ fn visit(ty: &Type, var: &TokenStream, defs: &Definitions) -> (Option<TokenStrea
 }
 
 fn node(impls: &mut TokenStream, node: &Node, defs: &Definitions) {
-    if IGNORED_TYPES.contains(&&*node.ident) || EMPTY_STRUCTS.contains(&&*node.ident) {
+    if IGNORED_TYPES.contains(&&*node.ident)
+        || COMPAT_TYPES.contains(&&*node.ident)
+        || EMPTY_STRUCTS.contains(&&*node.ident)
+    {
         return;
     }
 
