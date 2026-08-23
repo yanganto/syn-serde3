@@ -44,7 +44,7 @@
       "use": {
         "tree": {
           "path": {
-            "ident": "syn_serde",
+            "ident": "syn_serde3",
             "tree": {
               "ident": "json"
             }
