@@ -1,33 +1,27 @@
-name: Release
-
-permissions: {}
-
-on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: Version to be increased
-        required: true
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
+name: Rust Crate Release
 
 concurrency:
-  group: ${{ github.workflow }}
-  cancel-in-progress: false
+  group: rust-crate-release-${{ github.head_ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+*"
 
 jobs:
-  release:
-    if: github.repository_owner == 'taiki-e'
-    uses: taiki-e/github-actions/.github/workflows/rust-release.yml@e6a1170cbd07eb898017958967912976fce18f2d # 2026.7.3
-    permissions:
-      contents: write # for taiki-e/create-gh-release-action
-      id-token: write # for rust-lang/crates-io-auth-action
-      attestations: write # unused (used when options for uploading binaries are set)
-    secrets:
-      PUSH_TOKEN_APP_CLIENT_ID: ${{ secrets.PUSH_TOKEN_APP_CLIENT_ID }}
-      PUSH_TOKEN_APP_PRIVATE_KEY: ${{ secrets.PUSH_TOKEN_APP_PRIVATE_KEY }}
-    with:
-      version: ${{ inputs.version }}
+  crate_release:
+    name: Create Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish Crate
+        run: nix develop github:yanganto/parachutes#ci -c 'publish-crate' ${{ secrets.CARGO_REGISTRY_TOKEN }} syn-serde3
