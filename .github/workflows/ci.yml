@@ -6,8 +6,6 @@ on:
   pull_request:
   push:
     branches: [syn-serde3]
-  schedule:
-    - cron: '0 2 * * *'
   workflow_dispatch:
 
 concurrency:
@@ -34,18 +32,17 @@ env:
 
 defaults:
   run:
-    shell: bash --noprofile --norc -CeEuo pipefail {0}
+    shell: nix develop -c bash --noprofile --norc -CeEuo pipefail {0}
 
 jobs:
   tidy:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-      - name: Install Rust nightly
-        run: |
-          rustup toolchain install nightly --no-self-update
-          rustup default nightly
+      - uses: cachix/install-nix-action@v27
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install cargo-deny and cargo-hack
         run: |
           cargo install cargo-deny --locked
@@ -64,14 +61,13 @@ jobs:
       - run: git add -N . && git -c color.ui=always diff --exit-code
 
   check-external-types:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-      - name: Install Rust nightly-2026-06-12
-        run: |
-          rustup toolchain install nightly-2026-06-12 --no-self-update
-          rustup default nightly-2026-06-12
+      - uses: cachix/install-nix-action@v27
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install cargo-check-external-types
         run: cargo install cargo-check-external-types --version '=0.5.0' --locked
       - name: Run cargo check-external-types
@@ -82,14 +78,13 @@ jobs:
           )
 
   clippy:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-      - name: Install Rust nightly with clippy
-        run: |
-          rustup toolchain install nightly --component clippy --no-self-update
-          rustup default nightly
+      - uses: cachix/install-nix-action@v27
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run cargo clippy
         run: |
           IFS=$'\n\t'
@@ -182,17 +177,12 @@ jobs:
             build-mode: none
           - language: rust
             build-mode: none
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
       security-events: write
     steps:
       - uses: actions/checkout@v4
-      - name: Install Rust nightly
-        run: |
-          rustup toolchain install nightly --no-self-update
-          rustup default nightly
-        if: matrix.language == 'rust'
       - name: Initialize CodeQL
         uses: github/codeql-action/init@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
         with:
@@ -204,14 +194,13 @@ jobs:
           category: /language:${{ matrix.language }}
 
   codegen:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-      - name: Install Rust nightly
-        run: |
-          rustup toolchain install nightly --no-self-update
-          rustup default nightly
+      - uses: cachix/install-nix-action@v27
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - run: bash "${SCRIPT}"
         env:
           SCRIPT: tools/gen.sh
@@ -219,14 +208,13 @@ jobs:
       - run: git add -N . && git -c color.ui=always diff --exit-code
 
   docs:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-      - name: Install Rust nightly
-        run: |
-          rustup toolchain install nightly --no-self-update
-          rustup default nightly
+      - uses: cachix/install-nix-action@v27
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run cargo rustdoc
         run: |
           IFS=$'\n\t'
@@ -352,54 +340,32 @@ jobs:
 
   test:
     needs: [tidy, check-external-types, clippy, codeql, codegen, docs]
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - rust: stable
-          - rust: beta
-          - rust: nightly
-          - rust: nightly
-            os: windows-latest
-    runs-on: ${{ matrix.os || 'ubuntu-24.04' }}
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-      - name: Install Rust ${{ matrix.rust }}
-        run: |
-          rustup toolchain install ${{ matrix.rust }} --no-self-update
-          rustup default ${{ matrix.rust }}
-      - name: Add rust-src component
-        run: rustup component add rust-src
-        if: startsWith(matrix.rust, 'nightly')
+      - uses: cachix/install-nix-action@v27
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install cargo-hack and cargo-minimal-versions
         run: |
           cargo install cargo-hack --locked
           cargo install cargo-minimal-versions --locked
-      - name: Install cargo-careful
-        run: cargo install cargo-careful --locked
-        if: startsWith(matrix.rust, 'nightly')
       - run: cargo test --all --all-features --exclude syn-serde-internal-codegen
       - run: cargo test --all --all-features --release --exclude syn-serde-internal-codegen
-      - run: cargo careful test --all --all-features --exclude syn-serde-internal-codegen
-        env:
-          RUSTDOCFLAGS: ${{ env.RUSTDOCFLAGS }} -Z randomize-layout
-          RUSTFLAGS: ${{ env.RUSTFLAGS }} -Z randomize-layout
-        if: startsWith(matrix.rust, 'nightly')
       - run: cargo hack build --workspace --no-private --feature-powerset --no-dev-deps
       - run: cargo minimal-versions build --workspace --no-private --detach-path-deps=skip-exact --all-features
       - run: cargo minimal-versions build --workspace --no-private --detach-path-deps=skip-exact --all-features --direct
 
   miri:
     needs: [tidy, check-external-types, clippy, codeql, codegen, docs]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
-      - name: Install Rust nightly with miri
-        run: |
-          rustup toolchain install nightly --component miri --no-self-update
-          rustup default nightly
+      - uses: cachix/install-nix-action@v27
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - run: printf 'MIRIFLAGS=%s\n' "-Zmiri-strict-provenance -Zmiri-symbolic-alignment-check -Zmiri-disable-isolation -Zmiri-many-seeds=0..16" >>"${GITHUB_ENV}"
         if: github.event_name == 'schedule'
       - run: printf 'MIRIFLAGS=%s\n' "-Zmiri-strict-provenance -Zmiri-symbolic-alignment-check -Zmiri-disable-isolation" >>"${GITHUB_ENV}"
@@ -416,32 +382,24 @@ jobs:
           RUSTFLAGS: ${{ env.RUSTFLAGS }} -Z randomize-layout
 
   msrv:
-    name: msrv (${{ matrix.os }})
     needs: [tidy, check-external-types, clippy, codeql, codegen, docs]
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-24.04, windows-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v27
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install cargo-hack
         run: cargo install cargo-hack --locked
       - run: |
           IFS=$'\n\t'
           trap -- 's=$?; printf >&2 "%s\n" "${0##*/}:${LINENO}: \`${BASH_COMMAND}\` exit with ${s}"; exit ${s}' ERR
-          args=()
+          args=(--target x86_64-unknown-linux-gnu)
           if [[ "${GITHUB_EVENT_NAME}" == 'pull_request' ]]; then
             args+=(--version-step 2)
           fi
-          case "${OS}" in
-            ubuntu-*) args+=(--target x86_64-unknown-linux-gnu) ;;
-            windows-*) args+=(--target x86_64-pc-windows-msvc) ;;
-          esac
           (
             set -x
             cargo hack build --workspace --no-private --no-dev-deps --version-range '..' --all-features "${args[@]}"
           )
-        env:
-          OS: ${{ matrix.os }}
