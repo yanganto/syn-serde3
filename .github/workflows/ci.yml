@@ -69,13 +69,9 @@ jobs:
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install cargo-check-external-types
-        run: cargo install cargo-check-external-types --version '=0.5.0' --locked
+        run: nix develop -c cargo install cargo-check-external-types --version '=0.5.0' --locked
       - name: Run cargo check-external-types
-        run: |
-          (
-            set -x
-            cargo check-external-types --all-features --target=x86_64-unknown-linux-gnu
-          )
+        run: nix develop cargo check-external-types --all-features --target=x86_64-unknown-linux-gnu
 
   clippy:
     runs-on: ubuntu-latest
