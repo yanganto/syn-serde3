@@ -652,7 +652,7 @@ impl From<&syn::ItemImpl> for ItemImpl {
 }
 impl From<&ItemImpl> for syn::ItemImpl {
     fn from(node: &ItemImpl) -> Self {
-        let is_negative = node.trait_.as_ref().map_or(false, |(neg, _)| *neg);
+        let is_negative = node.trait_.as_ref().is_some_and(|(neg, _)| *neg);
         let mut modifiers = syn::ImplModifiers::default();
         if node.defaultness { modifiers.defaultness = Some(default()); }
         if is_negative { modifiers.polarity = Some(default()); }
