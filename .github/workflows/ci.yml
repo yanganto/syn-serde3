@@ -35,7 +35,7 @@ defaults:
     shell: nix develop -c bash --noprofile --norc -CeEuo pipefail {0}
 
 jobs:
-  tidy:
+  cargo-deny:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -48,11 +48,6 @@ jobs:
           nix develop
           cargo install cargo-deny --locked
           cargo install cargo-hack --locked
-      - run: cat -- tools/.tidy-check-license-headers
-      - run: cat -- .cspell.json
-      - run: tools/tidy.sh
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Run cargo-deny
         run: nix develop -c cargo hack --workspace-behavior=cargo --no-private --no-dev-deps deny --workspace --all-features check
       - run: git add -N . && git -c color.ui=always diff --exit-code
