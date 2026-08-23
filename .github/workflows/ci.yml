@@ -45,6 +45,7 @@ jobs:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install cargo-deny and cargo-hack
         run: |
+          nix develop
           cargo install cargo-deny --locked
           cargo install cargo-hack --locked
       - run: cat -- tools/.tidy-check-license-headers
@@ -53,11 +54,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Run cargo-deny
-        run: |
-          (
-            set -x
-            cargo hack --workspace-behavior=cargo --no-private --no-dev-deps deny --workspace --all-features check
-          )
+        run: nix develop -c cargo hack --workspace-behavior=cargo --no-private --no-dev-deps deny --workspace --all-features check
       - run: git add -N . && git -c color.ui=always diff --exit-code
 
   check-external-types:
